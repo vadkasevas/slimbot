@@ -8,6 +8,7 @@ class Slimbot extends Telegram(EventEmitter) {
     super(token, proxy);
     this._offset = undefined;
     this._timeout = undefined;
+    this.stopped = false;
   }
 
   _processUpdates(updates) {
@@ -52,7 +53,7 @@ class Slimbot extends Telegram(EventEmitter) {
   }
 
   startPolling(callback) {
-    return super.getUpdates(this._offset)
+    return this.getUpdates(this._offset)
     .then(updates => {
       if (updates !== undefined) {
         this._processUpdates(updates);
@@ -68,6 +69,8 @@ class Slimbot extends Telegram(EventEmitter) {
       }
     })
     .finally(() => {
+      if(this.stopped)
+        return;
       if (this._timeout && typeof this._timeout.refresh === 'function') {
         this._timeout.refresh();
       } else {
@@ -77,7 +80,9 @@ class Slimbot extends Telegram(EventEmitter) {
   }
 
   stopPolling() {
+    this.stopped = true;
     clearTimeout(this._timeout);
+    this.emit('stopped');
   }
 }
 

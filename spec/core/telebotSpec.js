@@ -22,7 +22,7 @@ describe('Slimbot', () => {
     });
 
     Slimbot = require('../../src/slimbot');
-    slimbot = new Slimbot('token');
+    slimbot = new Slimbot(process.env.TOKEN);
   });
 
   afterEach(() => {

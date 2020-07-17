@@ -4,6 +4,7 @@ const Request = require('request-promise');
 const Agent = require('socks5-https-client/lib/Agent');
 const Stream = require('stream');
 const Path = require('path');
+const https = require('https');
 
 const Telegram = EventEmitter => class extends EventEmitter {
   constructor(token, proxy) {
@@ -15,7 +16,13 @@ const Telegram = EventEmitter => class extends EventEmitter {
     if(proxy !== undefined){
       this._useProxy = true;
       this._proxy = proxy;
+    }else{
+      const agent = this.agent = new https.Agent();
+      this.on('stopped',()=>{
+        agent.destroy();
+      });
     }
+
   }
 
   _request(method, params, formData) {
@@ -55,6 +62,8 @@ const Telegram = EventEmitter => class extends EventEmitter {
         options.agentOptions.socksUsername = this._proxy.socksUsername;
         options.agentOptions.socksPassword = this._proxy.socksPassword;
       }
+    }else {
+      options.agent = this.agent;
     }
 
     return Request(options)
